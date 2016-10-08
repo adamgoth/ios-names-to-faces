@@ -16,6 +16,12 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         super.viewDidLoad()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewPerson))
+        
+        let defaults = UserDefaults.standard
+        
+        if let savedPeople = defaults.object(forKey: "people") as? Data {
+            people = NSKeyedUnarchiver.unarchiveObject(with: savedPeople) as! [Person]
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -57,6 +63,7 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
             let newName = ac.textFields![0]
             person.name = newName.text!
             
+            self.save()
             self.collectionView?.reloadData()
         })
         
@@ -82,6 +89,8 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         
         let person = Person(name: "Unknown", image: imageName)
         people.append(person)
+        
+        self.save()
         collectionView?.reloadData()
         
         dismiss(animated: true)
@@ -91,6 +100,12 @@ class ViewController: UICollectionViewController, UIImagePickerControllerDelegat
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let documentsDirectory = paths[0]
         return documentsDirectory
+    }
+    
+    func save() {
+        let savedData = NSKeyedArchiver.archivedData(withRootObject: people)
+        let defaults = UserDefaults.standard
+        defaults.set(savedData, forKey: "people")
     }
 
 }
